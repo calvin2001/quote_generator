@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💫 명언 생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+            animation: slideUp 0.8s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .quote-section {
+            padding: 40px 30px;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .quote-text {
+            font-size: 1.8rem;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 20px;
+            font-style: italic;
+            position: relative;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .quote-text::before {
+            content: '"';
+            font-size: 4rem;
+            color: #ddd;
+            position: absolute;
+            left: -30px;
+            top: -20px;
+        }
+
+        .quote-text::after {
+            content: '"';
+            font-size: 4rem;
+            color: #ddd;
+            position: absolute;
+            right: -30px;
+            bottom: -40px;
+        }
+
+        .quote-author {
+            font-size: 1.2rem;
+            color: #666;
+            font-weight: 600;
+            animation: fadeIn 0.6s ease 0.2s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-favorite {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-favorite:hover {
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+        }
+
+        .btn-favorite.favorited {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+        }
+
+        .category-select {
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 50px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .category-select:focus {
+            border-color: #667eea;
+        }
+
+        .favorites-section {
+            padding: 30px;
+            border-top: 1px solid #eee;
+            background: #f8f9fa;
+        }
+
+        .favorites-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .favorites-title {
+            font-size: 1.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .favorites-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .favorites-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .favorite-item {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            animation: slideIn 0.3s ease;
+        }
+
+        .favorite-content {
+            flex: 1;
+        }
+
+        .favorite-text {
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .favorite-author {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .remove-favorite {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .remove-favorite:hover {
+            background: #ff3742;
+            transform: scale(1.05);
+        }
+
+        .stats {
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .empty-favorites {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .quote-text {
+                font-size: 1.4rem;
+            }
+            
+            .quote-text::before,
+            .quote-text::after {
+                display: none;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn, .category-select {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💫 명언 생성기</h1>
+            <p>매일 새로운 영감을 받아보세요</p>
+        </div>
+
+        <div class="quote-section">
+            <div class="quote-text" id="quoteText">
+                새로운 명언을 생성해보세요!
+            </div>
+            <div class="quote-author" id="quoteAuthor">
+                - 명언 생성기
+            </div>
+        </div>
+
+        <div class="controls">
+            <select class="category-select" id="categorySelect">
+                <option value="all">모든 카테고리</option>
+                <option value="motivation">동기부여</option>
+                <option value="success">성공</option>
+                <option value="life">인생</option>
+                <option value="wisdom">지혜</option>
+                <option value="love">사랑</option>
+                <option value="learning">학습</option>
+            </select>
+            
+            <button class="btn" onclick="generateQuote()" id="generateBtn">
+                새 명언 생성
+            </button>
+            
+            <button class="btn btn-favorite" onclick="toggleFavorite()" id="favoriteBtn">
+                ❤️ 즐겨찾기
+            </button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="generatedCount">0</span>
+                <span class="stat-label">생성된 명언</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="favoriteCount">0</span>
+                <span class="stat-label">즐겨찾기</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="todayCount">0</span>
+                <span class="stat-label">오늘 본 명언</span>
+            </div>
+        </div>
+
+        <div class="favorites-section">
+            <div class="favorites-header">
+                <h3 class="favorites-title">⭐ 즐겨찾기</h3>
+                <span class="favorites-count" id="favoritesCount">0개</span>
+            </div>
+            <div class="favorites-list" id="favoritesList">
+                <div class="empty-favorites">
+                    <p>아직 즐겨찾기한 명언이 없습니다.</p>
+                    <p>마음에 드는 명언을 즐겨찾기해보세요! ❤️</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 명언 데이터베이스
+        const quotes = {
+            motivation: [
+                { text: "성공은 준비된 자에게 찾아온다.", author: "루이 파스퇴르" },
+                { text: "포기하지 마라. 시작이 항상 가장 어렵다.", author: "무명" },
+                { text: "꿈을 이루고 싶다면 먼저 잠에서 깨어나라.", author: "무명" },
+                { text: "불가능한 것은 불가능하다고 생각하는 자에게만 불가능하다.", author: "무명" },
+                { text: "오늘의 노력이 내일의 행운을 만든다.", author: "무명" }
+            ],
+            success: [
+                { text: "성공은 실패를 두려워하지 않는 자의 것이다.", author: "넬슨 만델라" },
+                { text: "성공의 비밀은 시작하는 것이다.", author: "마크 트웨인" },
+                { text: "성공은 우연이 아니다. 노력, 인내, 학습, 희생의 결과다.", author: "펠레" },
+                { text: "진정한 성공은 다른 사람을 성공하게 돕는 것이다.", author: "지그 지글러" },
+                { text: "성공하려면 실패를 두려워 말고 실패에서 배워라.", author: "무명" }
+            ],
+            life: [
+                { text: "인생은 자전거를 타는 것과 같다. 균형을 잡으려면 계속 움직여야 한다.", author: "알버트 아인슈타인" },
+                { text: "인생에서 가장 중요한 것은 살아있다는 것 자체이다.", author: "무명" },
+                { text: "어제는 역사고, 내일은 미스터리다. 오늘이 선물이다.", author: "무명" },
+                { text: "인생은 10%의 일어나는 일과 90%의 반응하는 방식으로 이루어진다.", author: "찰스 스윈돌" },
+                { text: "행복한 인생을 살려면 작은 것들에 마음을 묶어두어라.", author: "무명" }
+            ],
+            wisdom: [
+                { text: "현명한 자는 어리석은 자에게서도 배운다.", author: "무명" },
+                { text: "아는 것이 힘이다.", author: "프랜시스 베이컨" },
+                { text: "경험은 최고의 스승이다.", author: "무명" },
+                { text: "지혜는 지식보다 중요하다.", author: "알버트 아인슈타인" },
+                { text: "현명함은 실수를 인정하는 것에서 시작된다.", author: "무명" }
+            ],
+            love: [
+                { text: "사랑은 우리가 할 수 있는 유일한 합리적인 행위다.", author: "미치 앨봄" },
+                { text: "진정한 사랑은 완벽한 상대를 찾는 것이 아니라 불완전한 상대를 완벽하게 보는 것이다.", author: "무명" },
+                { text: "사랑받는 것도 행복이지만, 사랑하는 것은 더 큰 행복이다.", author: "무명" },
+                { text: "가장 큰 행복은 사랑하고 사랑받는 것이다.", author: "무명" },
+                { text: "사랑은 시간과 공간을 초월한다.", author: "무명" }
+            ],
+            learning: [
+                { text: "배움에는 끝이 없다.", author: "공자" },
+                { text: "호기심은 지식의 시작이다.", author: "무명" },
+                { text: "매일 배우지 않으면 매일 뒤처진다.", author: "무명" },
+                { text: "실패는 성공의 어머니다.", author: "무명" },
+                { text: "질문하는 것을 두려워하지 마라. 모르는 것을 부끄러워하지 마라.", author: "무명" }
+            ]
+        };
+
+        // 전역 변수들
+        let currentQuote = null;
+        let favorites = [];
+        let stats = {
+            generated: 0,
+            todayGenerated: 0,
+            lastVisit: null
+        };
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDataFromStorage();
+            updateStats();
+            renderFavorites();
+            generateQuote(); // 첫 명언 자동 생성
+        });
+
+        // 명언 생성
+        function generateQuote() {
+            const generateBtn = document.getElementById('generateBtn');
+            const category = document.getElementById('categorySelect').value;
+            
+            // 로딩 상태 표시
+            generateBtn.innerHTML = '<span class="loading"></span>새 명언 생성중...';
+            generateBtn.disabled = true;
+
+            // 약간의 딜레이로 로딩 효과 연출
+            setTimeout(() => {
+                let selectedQuotes = [];
+                
+                if (category === 'all') {
+                    // 모든 카테고리에서 명언 수집
+                    selectedQuotes = Object.values(quotes).flat();
+                } else {
+                    selectedQuotes = quotes[category] || [];
+                }
+
+                if (selectedQuotes.length === 0) {
+                    alert('해당 카테고리에 명언이 없습니다.');
+                    return;
+                }
+
+                // 랜덤 명언 선택
+                const randomIndex = Math.floor(Math.random() * selectedQuotes.length);
+                currentQuote = {
+                    ...selectedQuotes[randomIndex],
+                    category: category === 'all' ? getQuoteCategory(selectedQuotes[randomIndex]) : category,
+                    timestamp: new Date().toISOString()
+                };
+
+                // 화면에 표시
+                displayQuote(currentQuote);
+                
+                // 통계 업데이트
+                stats.generated++;
+                updateTodayCount();
+                updateStats();
+                saveDataToStorage();
+
+                // 즐겨찾기 버튼 상태 업데이트
+                updateFavoriteButton();
+
+                // 로딩 상태 해제
+                generateBtn.innerHTML = '새 명언 생성';
+                generateBtn.disabled = false;
+            }, 800);
+        }
+
+        // 명언 화면에 표시
+        function displayQuote(quote) {
+            const quoteText = document.getElementById('quoteText');
+            const quoteAuthor = document.getElementById('quoteAuthor');
+
+            // 애니메이션을 위해 잠시 숨김
+            quoteText.style.opacity = '0';
+            quoteAuthor.style.opacity = '0';
+
+            setTimeout(() => {
+                quoteText.textContent = quote.text;
+                quoteAuthor.textContent = `- ${quote.author}`;
+                
+                // 서서히 나타나는 효과
+                quoteText.style.opacity = '1';
+                quoteAuthor.style.opacity = '1';
+            }, 200);
+        }
+
+        // 즐겨찾기 토글
+        function toggleFavorite() {
+            if (!currentQuote) {
+                alert('먼저 명언을 생성해주세요!');
+                return;
+            }
+
+            const existingIndex = favorites.findIndex( fav =>
+                fav.text === currentQuote.text && fav.author === currentQuote.author
+            );
+
+            if (existingIndex === -1) {
+                // 즐겨찾기 추가
+                favorites.unshift({
+                    ...currentQuote,
+                    addedAt: new Date().toLocaleString('ko-KR')
+                });
+                showNotification('즐겨찾기에 추가되었습니다! ⭐');
+            } else {
+                // 즐겨찾기 제거
+                favorites.slice(existingIndex, 1);
+                showNotification('즐겨찾기에서 제거되었습니다.');
+            }
+
+            updateFavoriteButton();
+            renderFavorites();
+            updateStats();
+            saveDataToStorage();
+        }
+
+        // 즐겨찾기 버튼 상태 업데이트
+        function updateFavoriteButton() {
+            const favoriteBtn = document.getElementById('favoriteBtn');
+            
+            if (!currentQuote) return;
+
+            const isFavorited = favorites.some( fav => 
+                fav.text === currentQuote.text && fav.author === currentQuote.author
+            );
+
+            if (isFavorited) {
+                favoriteBtn.textContent = '⭐ 즐겨찾기됨';
+                favoriteBtn.classList.add('favorited');
+            } else {
+                favoriteBtn.textContent = '❤️ 즐겨찾기';
+                favoriteBtn.classList.remove('favorited');
+            }
+        }
+
+        // 즐겨찾기 목록 렌더링
+        function renderFavorites() {
+            const favoritesList = document.getElementById('favoritesList');
+            const favoritesCount = document.getElementById('favoritesCount');
+
+            favoritesCount.textContent = `${favorites.length}개`;
+
+            if (favorites.length === 0) {
+                favoritesList.innerHTML = `
+                    <div class="empty-favorites">
+                        <p>아직 즐겨찾기한 명언이 없습니다.</p>
+                        <p>마음에 드는 명언을 즐겨찾기해보세요! ❤️</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const favoritesHTML = favorites.map((quote, index) => `
+                <div class="favorite-item">
+                    <div class="favorite-content">
+                        <div class="favorite-text">"${escapeHtml(quote.text)}"</div>
+                        <div class="favorite-author">- ${escapeHtml(quote.author)}</div>
+                        <div style="font-size: 0.8rem; color: #999; margin-top: 5px;">
+                            ${quote.addedAt} | ${getCategoryName(quote.category)}
+                        </div>
+                    </div>
+                    <button class="remove-favorite" onclick="removeFavorite(${index})">
+                        삭제
+                    </button>
+                </div>
+            `).join('');
+
+            favoritesList.innerHTML = favoritesHTML;
+        }
+
+        // 즐겨찾기 제거
+        function removeFavorite(index) {
+            if (confirm('정말로 즐겨찾기에서 제거하시겠습니까?')) {
+                favorites.splice(index, 1);
+                renderFavorites();
+                updateStats();
+                saveDataToStorage();
+                updateFavoriteButton();
+                showNotification('즐겨찾기에서 제거되었습니다.');
+            }
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            document.getElementById('generatedCount').textContent = stats.generated;
+            document.getElementById('favoriteCount').textContent = favorites.length;
+            document.getElementById('todayCount').textContent = stats.todayGenerated;
+        }
+
+        // 오늘 생성 수 업데이트
+        function updateTodayCount() {
+            const today = new Date().toDateString();
+            const lastVisit = stats.lastVisit;
+
+            if (lastVisit !== today) {
+                stats.todayGenerated = 1;
+                stats.lastVisit = today;
+            } else {
+                stats.todayGenerated++;
+            }
+        }
+
+        // 데이터 로컬스토리지에서 불러오기
+        function loadDataFromStorage() {
+            try {
+                const storedFavorites = localStorage.getItem('quoteFavorites');
+                const storedStats = localStorage.getItem('quoteStats');
+
+                if (storedFavorites) {
+                    favorites = JSON.parse(storedFavorites);
+                }
+
+                if (storedStats) {
+                    stats = {...stats, ...JSON.parse(storedStats)};
+                }
+            } catch (error) {
+                console.error("데이터로드 실패:", error);
+            }
+        }
+
+        // 데이터 로컬스토리지에 저장
+        function saveDataToStorage() {
+            try {
+                localStorage.setItem('quoteFavorites', JSON.stringify(favorites));
+                localStorage.setItem('quoteStats', JSON.stringify(stats));
+            } catch (error) {
+                console.error("데이터 저장 실패:", error);
+            }
+        }
+
+        // 명언의 카테고리 찾기
+        function getQuoteCategory(quote) {
+            for (const [category, quoteList] of Object.entries(quotes)) {
+                if (quoteList.some(q => q.text === quote.text && q.author === quote.author)) {
+                    return category;
+                }
+            }
+            return 'unknown';
+        }
+
+        // 카테고리 이름 변환
+        function getCategoryName(category) {
+            const categoryNames = {
+                motivation: '동기부여',
+                success: '성공',
+                life: '인생',
+                wisdom: '지혜',
+                love: '사랑',
+                learning: '학습'
+            };
+            return categoryNames[category] || '기타';
+        }
+
+        // HTML 이스케이프
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // 알림 표시
+        function showNotification(message) {
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+                z-index: 1000;
+                animation: slideInRight 0.3s ease;
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // 키보드 단축키
+        document.addEventListener('keydown', function(e){
+            if(e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT'){
+                e.preventDefault();
+                generateQuote();
+            } else if(e.ctrlKey && e.key === 'f'){
+                e.preventDefault();
+                toggleFavorite();
+            }
+        });
+
+        // 애니메이션 CSS 추가
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
