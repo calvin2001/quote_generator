@@ -162,6 +162,24 @@
             background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
         }
 
+        .btn-copy {
+            background: linear-gradient(135deg, #e9ec1f 0%, #cdd647 100%);
+            box-shadow: 0 4px 15px rgba(163, 121, 121, 0.4);
+        }
+
+        .btn-copy:hover {
+            box-shadow: 0 8px 25px rgba(209, 224, 68, 0.6);
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #e9ec1f 0%, #cdd647 100%);
+            box-shadow: 0 4px 15px rgba(163, 121, 121, 0.4);
+        }
+
+        .btn-share:hover {
+            box-shadow: 0 8px 25px rgba(209, 224, 68, 0.6);
+        }
+
         .category-select {
             padding: 15px;
             border: 2px solid #eee;
@@ -372,6 +390,14 @@
             <button class="btn btn-favorite" onclick="toggleFavorite()" id="favoriteBtn">
                 ❤️ 즐겨찾기
             </button>
+
+            <button class="btn btn-copy" onclick="copyQuote()" id="copyBtn">
+                📋 클립보드 복사기능
+            </button>
+
+            <button class="btn btn-share" onclick="shareQuote()" id="shareBtn">
+                💡 명언 공유기능
+            </button>
         </div>
 
         <div class="stats">
@@ -516,6 +542,29 @@
                 generateBtn.innerHTML = '새 명언 생성';
                 generateBtn.disabled = false;
             }, 800);
+        }
+
+        function copyQuote() {
+            if (!currentQuote) return;
+
+            const text = `"${currentQuote.text}" - ${currentQuote.author}`;
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('명언이 복사되었습니다! 📋');
+            });
+        }
+
+        function shareQuote() {
+            if (!currentQuote) return;
+
+            const text = `"${currentQuote.text}" - ${currentQuote.author}`;
+            if(navigator.share) {
+                navigator.share({
+                    title: '명언 공유',
+                    text: text
+                });
+            } else {
+                copyQuote();
+            }
         }
 
         // 명언 화면에 표시
